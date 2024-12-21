@@ -1,5 +1,6 @@
 package com.example.androidca
 
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -105,7 +106,7 @@ class PlayActivity : AppCompatActivity() {
         }
 
         // 检查游戏是否完成
-        if (matchCount == 6) {
+        if (matchCount == 3) {
             onGameComplete()
 
         }
@@ -117,6 +118,9 @@ class PlayActivity : AppCompatActivity() {
         val elapsedTime = System.currentTimeMillis() - startTime
         Toast.makeText(this, "Game Complete! Time: ${elapsedTime / 1000}s", Toast.LENGTH_LONG).show()
         // 保存成绩到后端并跳转到排行榜界面
+
+        var intent = Intent(this,LeaderBoardActivity::class.java)
+        startActivity(intent)
     }
 
 
