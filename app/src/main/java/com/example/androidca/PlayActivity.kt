@@ -115,11 +115,14 @@ class PlayActivity : AppCompatActivity() {
     }
     //游戏结算
     private fun onGameComplete() {
+        println("startTime : $startTime")
         val elapsedTime = System.currentTimeMillis() - startTime
         Toast.makeText(this, "Game Complete! Time: ${elapsedTime / 1000}s", Toast.LENGTH_LONG).show()
         // 保存成绩到后端并跳转到排行榜界面
 
-        var intent = Intent(this,LeaderBoardActivity::class.java)
+        val intent = Intent(this,LeaderBoardActivity::class.java)
+        intent.putExtra("completionTime", elapsedTime / 1000)
+        println("elapsed $elapsedTime ")
         startActivity(intent)
     }
 
