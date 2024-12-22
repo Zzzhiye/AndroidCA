@@ -26,8 +26,8 @@ class LeaderBoardActivity : AppCompatActivity() {
         closeButton.setBackgroundResource(R.drawable.close)
         closeButton.setOnClickListener {
 
-            //TODO Now fetch activity page not exist, default as PlayActivity
-            val intent = Intent(this, PlayActivity::class.java)
+            //TODO Now fetch activity page not exist, default as MainActivity
+            val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             finish()
         }

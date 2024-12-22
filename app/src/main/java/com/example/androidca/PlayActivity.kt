@@ -1,5 +1,6 @@
 package com.example.androidca
 
+import android.animation.ObjectAnimator
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -10,10 +11,8 @@ import android.widget.GridLayout
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.core.animation.doOnEnd
 
 class PlayActivity : AppCompatActivity() {
     private lateinit var  matchCountView:TextView
@@ -21,13 +20,25 @@ class PlayActivity : AppCompatActivity() {
     private lateinit var  gameGrid:GridLayout
     private lateinit var adContainer:FrameLayout
     private var matchCount = 0
+
+    //存放已翻开的卡牌
+    private val matchedCards = mutableSetOf<Int>()
+    //两张用于比较的牌
+    private var firstCard: ImageView? = null
+    private var secondCard: ImageView? = null
+    //两张牌正在比较中的状态
+    private var isProcessing = false
+
     private var startTime = 0L
     private var selectImages = listOf<Int>()//图片资源id传入
     private var revealedCards = mutableListOf<View>()
     private var selectedImages = listOf(
-        R.drawable.text1,
-        R.drawable.text2,
-        R.drawable.text4
+        R.drawable.br,
+        R.drawable.che,
+        R.drawable.mc,
+        R.drawable.mu,
+        R.drawable.ncs,
+        R.drawable.w
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,6 +70,9 @@ class PlayActivity : AppCompatActivity() {
     //游戏卡牌初始化
     private fun initGamerGrid(){
         val shuffledImages = (selectedImages + selectedImages).shuffled() //6zu对应
+
+        gameGrid.columnCount = 4 //形成3行4列布局
+
         for(imageId in shuffledImages){
             val card = createCardView(imageId)
             gameGrid.addView(card)
@@ -73,53 +87,81 @@ class PlayActivity : AppCompatActivity() {
             columnSpec = GridLayout.spec(GridLayout.UNDEFINED,1f)
             rowSpec = GridLayout.spec(GridLayout.UNDEFINED,1f)
         }
-        card.setImageResource(R.drawable.card_back)//刚开始是牌背
+        card.setImageResource(R.drawable.back)//刚开始是牌背
+
+        //后面用来图片配对
+        card.tag = imageId
+
         card.setOnClickListener{onCardClicked(card,imageId)}
         return card
     }
+
+    //卡片翻转方法
+    private fun flipCard(card: ImageView, showFront: Boolean) {
+        val animator = ObjectAnimator.ofFloat(card, "rotationY", 0f, 90f)
+        animator.duration = 300
+        animator.start()
+        animator.doOnEnd {
+            card.setImageResource(if (showFront) card.tag as Int else R.drawable.back)
+            val reverseAnimator = ObjectAnimator.ofFloat(card, "rotationY", 90f, 0f)
+            reverseAnimator.duration = 300
+            reverseAnimator.start()
+        }
+    }
+
     //游戏内部
     private fun onCardClicked(card: ImageView, imageId: Int) {
-        if (revealedCards.contains(card)) return // 防止重复点击
+        // 防止重复点击
+        // 或正在处理其他翻牌操作时继续点击
+        // 或点击翻转后的牌
+        if (isProcessing || card.tag in matchedCards || card.tag in matchedCards) return
 
         // 翻转卡片
-        card.setImageResource(imageId)
-        revealedCards.add(card)
-
-        if (revealedCards.size == 2) {
-            // 检查是否匹配
-            val firstCard = revealedCards[0] as ImageView
-            val secondCard = revealedCards[1] as ImageView
-
-            if (firstCard.drawable.constantState == secondCard.drawable.constantState) {
-                // 匹配成功
-                matchCount++
-                matchCountView.text = "Matches: $matchCount"
-                revealedCards.clear()
-            } else {
-                // 延时隐藏
-                Handler(Looper.getMainLooper()).postDelayed({
-                    firstCard.setImageResource(R.drawable.card_back)
-                    secondCard.setImageResource(R.drawable.card_back)
-                    revealedCards.clear()
-                }, 1000)
-            }
+        flipCard(card, showFront = true)
+        if (firstCard == null) {
+            firstCard = card
+        } else {
+            secondCard = card
+            checkMatch()
         }
-
-        // 检查游戏是否完成
-        if (matchCount == 3) {
-            onGameComplete()
-
-        }
-
-
     }
+
+    private fun checkMatch() {
+        isProcessing = true
+
+        if (firstCard?.tag == secondCard?.tag) {
+            matchCount++
+            matchedCards.add(firstCard?.tag as Int)
+            matchedCards.add(secondCard?.tag as Int)
+            firstCard = null
+            secondCard = null
+            isProcessing = false
+
+            matchCountView.text = "Matches: $matchCount"
+
+            if (matchCount == selectedImages.size) {
+                onGameComplete()
+            }
+        } else {
+            Handler().postDelayed({
+                flipCard(firstCard!!, showFront = false)
+                flipCard(secondCard!!, showFront = false)
+                firstCard = null
+                secondCard = null
+                isProcessing = false
+            }, 1000)
+        }
+    }
+
     //游戏结算
     private fun onGameComplete() {
         println("startTime : $startTime")
         val elapsedTime = System.currentTimeMillis() - startTime
-        Toast.makeText(this, "Game Complete! Time: ${elapsedTime / 1000}s", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "Game Complete!, Time: ${elapsedTime / 1000}s", Toast.LENGTH_LONG).show()
         // 保存成绩到后端并跳转到排行榜界面
 
+        //关闭游戏画面
+        finish()
         val intent = Intent(this,LeaderBoardActivity::class.java)
         intent.putExtra("completionTime", elapsedTime / 1000)
         println("elapsed $elapsedTime ")
