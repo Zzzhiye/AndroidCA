@@ -13,6 +13,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
+
 
 class PlayActivity : AppCompatActivity() {
     private lateinit var  matchCountView:TextView
@@ -44,11 +48,18 @@ class PlayActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_play)
+
+        //Initialise and load ads
+        MobileAds.initialize(this) {}
+        val adView: AdView = findViewById(R.id.adView)
+        val adRequest = AdRequest.Builder().build()
+        adView.loadAd(adRequest)
+
         //绑定视图
         matchCountView = findViewById(R.id.mC)
         timerView = findViewById(R.id.timer)
         gameGrid = findViewById(R.id.gG)
-        adContainer = findViewById(R.id.aC)
+        //adContainer = findViewById(R.id.adView)
         //计时器启动！
         startTimer()
         //游戏网格初始化
