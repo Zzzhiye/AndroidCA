@@ -25,6 +25,11 @@ class PlayActivity : AppCompatActivity() {
     private lateinit var adContainer:FrameLayout
     private var matchCount = 0
 
+    //for ads display usage
+    private lateinit var adView: AdView
+    private val refreshInterval = 30000L
+    private val handler = Handler(Looper.getMainLooper())
+
     //存放已翻开的卡牌
     private val matchedCards = mutableSetOf<Int>()
     //两张用于比较的牌
@@ -51,19 +56,25 @@ class PlayActivity : AppCompatActivity() {
 
         //Initialise and load ads
         MobileAds.initialize(this) {}
-        val adView: AdView = findViewById(R.id.adView)
-        val adRequest = AdRequest.Builder().build()
-        adView.loadAd(adRequest)
 
         //绑定视图
         matchCountView = findViewById(R.id.mC)
         timerView = findViewById(R.id.timer)
         gameGrid = findViewById(R.id.gG)
-        //adContainer = findViewById(R.id.adView)
+        adContainer = findViewById(R.id.adContainer)
+
+        //initialise ads
+        adView = AdView(this)
+        adView.setAdSize(com.google.android.gms.ads.AdSize.BANNER)
+        adView.adUnitId = "ca-app-pub-6677345918902926/4778437587"
+        adContainer.addView(adView)
+
         //计时器启动！
         startTimer()
         //游戏网格初始化
         initGamerGrid()
+
+        startAdRefreshing()
     }
     private fun startTimer(){
         startTime = System.currentTimeMillis()
@@ -177,6 +188,27 @@ class PlayActivity : AppCompatActivity() {
         intent.putExtra("completionTime", elapsedTime / 1000)
         println("elapsed $elapsedTime ")
         startActivity(intent)
+    }
+
+    private fun loadAd() {
+        val adRequest = AdRequest.Builder().build()
+        adView.loadAd(adRequest)
+    }
+
+    private fun startAdRefreshing() {
+        loadAd()
+
+        handler.postDelayed(object: Runnable {
+            override fun run() {
+                loadAd()
+                handler.postDelayed(this, refreshInterval)
+            }
+        }, refreshInterval)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        handler.removeCallbacksAndMessages(null)
     }
 
 
