@@ -25,11 +25,8 @@ class PlayActivity : AppCompatActivity() {
     private lateinit var  gameGrid:GridLayout
     private lateinit var adContainer:FrameLayout
     private var matchCount = 0
+    private lateinit var adManager: AdManager
 
-    //for ads display usage
-    private lateinit var adView: AdView
-    private val refreshInterval = 30000L
-    private val handler = Handler(Looper.getMainLooper())
 
     //存放已翻开的卡牌
     private val matchedCards = mutableSetOf<Int>()
@@ -65,18 +62,14 @@ class PlayActivity : AppCompatActivity() {
         adContainer = findViewById(R.id.adContainer)
 
         //initialise ads
-        adView = AdView(this)
-        adView.setAdSize(com.google.android.gms.ads.AdSize.BANNER)
-        adView.adUnitId = "ca-app-pub-6677345918902926/4778437587"
-        //adContainer.addView(adView)
-        checkUserPaidStatus()
+        adManager = AdManager(this, adContainer)
+        adManager.initializeAds()
 
         //计时器启动！
         startTimer()
         //游戏网格初始化
         initGamerGrid()
 
-        startAdRefreshing()
     }
     private fun startTimer(){
         startTime = System.currentTimeMillis()
@@ -192,37 +185,9 @@ class PlayActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun loadAd() {
-        val adRequest = AdRequest.Builder().build()
-        adView.loadAd(adRequest)
-    }
-
-    private fun startAdRefreshing() {
-        loadAd()
-
-        handler.postDelayed(object: Runnable {
-            override fun run() {
-                loadAd()
-                handler.postDelayed(this, refreshInterval)
-            }
-        }, refreshInterval)
-    }
-
     override fun onDestroy() {
         super.onDestroy()
-        handler.removeCallbacksAndMessages(null)
+        adManager.stopAds()
     }
-
-    private fun checkUserPaidStatus() {
-        val sharedPrefs = getSharedPreferences(LoginActivity.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
-        val isPaid = sharedPrefs.getBoolean(LoginActivity.IS_PAID_KEY, false)
-
-        if (!isPaid) {
-            adContainer.addView(adView)
-        } else {
-            adContainer.visibility = View.GONE
-        }
-    }
-
 
 }

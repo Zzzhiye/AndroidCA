@@ -39,12 +39,10 @@ class LoginActivity : AppCompatActivity() {
                     val response = ApiClient.apiService.login(LoginRequest(username, password))
                     if (response.isSuccessful) {
                         val loginResponse = response.body()
-                        val isPaid =
-                            loginResponse?.user?.isPaid?: false // Assuming the response includes `isPaid`
-
-                            savePaidStatus(isPaid) // Save the `isPaid` status
-                            startActivity(Intent(this@LoginActivity, PlayActivity::class.java))
-                            finish()
+                        val isPaid = loginResponse?.user?.isPaid?: false
+                        savePaidStatus(isPaid)
+                        startActivity(Intent(this@LoginActivity, PlayActivity::class.java))
+                        finish()
                         }  else {
                         Toast.makeText(this@LoginActivity, "Login failed", Toast.LENGTH_SHORT).show()
                     }
