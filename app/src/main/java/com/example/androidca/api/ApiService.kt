@@ -2,6 +2,7 @@ package com.example.androidca.api
 
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
 
 interface ApiService {
@@ -19,7 +20,8 @@ data class LoginRequest(
 
 data class LoginResponse(
     val message: String,
-    val user: User
+    val user: User,
+    val IsPaid: Boolean
 )
 
 data class LogoutResponse(

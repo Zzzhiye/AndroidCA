@@ -6,6 +6,9 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.example.androidca.LoginActivity.Companion.IS_PAID_KEY
+import com.example.androidca.LoginActivity.Companion.SHARED_PREFS_NAME
+import com.example.androidca.LoginActivity.Companion.VERIFICATION_CODE_KEY
 import com.example.androidca.api.ApiClient
 import com.example.androidca.api.LoginRequest
 import com.example.androidca.databinding.ActivityLoginBinding
@@ -19,6 +22,7 @@ class LoginActivity : AppCompatActivity() {
     companion object {
         const val VERIFICATION_CODE_KEY = "verification_code"
         const val SHARED_PREFS_NAME = "MemoryGamePrefs"
+        const val IS_PAID_KEY = "is_paid"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,9 +38,14 @@ class LoginActivity : AppCompatActivity() {
                 try {
                     val response = ApiClient.apiService.login(LoginRequest(username, password))
                     if (response.isSuccessful) {
-                        startActivity(Intent(this@LoginActivity, PlayActivity::class.java))
-                        finish()
-                    } else {
+                        val loginResponse = response.body()
+                        val isPaid =
+                            loginResponse?.user?.isPaid?: false // Assuming the response includes `isPaid`
+
+                            savePaidStatus(isPaid) // Save the `isPaid` status
+                            startActivity(Intent(this@LoginActivity, PlayActivity::class.java))
+                            finish()
+                        }  else {
                         Toast.makeText(this@LoginActivity, "Login failed", Toast.LENGTH_SHORT).show()
                     }
                 } catch (e: Exception) {
@@ -58,6 +67,15 @@ class LoginActivity : AppCompatActivity() {
         val sharedPrefs = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
         sharedPrefs.edit().apply {
             putString(VERIFICATION_CODE_KEY, code)
+            apply()
+        }
+    }
+
+    //save paid status from response
+    private fun savePaidStatus(isPaid: Boolean) {
+        val sharedPrefs = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
+        sharedPrefs.edit().apply {
+            putBoolean(IS_PAID_KEY, isPaid)
             apply()
         }
     }

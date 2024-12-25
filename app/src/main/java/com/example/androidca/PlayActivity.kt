@@ -1,6 +1,7 @@
 package com.example.androidca
 
 import android.animation.ObjectAnimator
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -67,7 +68,8 @@ class PlayActivity : AppCompatActivity() {
         adView = AdView(this)
         adView.setAdSize(com.google.android.gms.ads.AdSize.BANNER)
         adView.adUnitId = "ca-app-pub-6677345918902926/4778437587"
-        adContainer.addView(adView)
+        //adContainer.addView(adView)
+        checkUserPaidStatus()
 
         //计时器启动！
         startTimer()
@@ -209,6 +211,17 @@ class PlayActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         handler.removeCallbacksAndMessages(null)
+    }
+
+    private fun checkUserPaidStatus() {
+        val sharedPrefs = getSharedPreferences(LoginActivity.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
+        val isPaid = sharedPrefs.getBoolean(LoginActivity.IS_PAID_KEY, false)
+
+        if (!isPaid) {
+            adContainer.addView(adView)
+        } else {
+            adContainer.visibility = View.GONE
+        }
     }
 
 
