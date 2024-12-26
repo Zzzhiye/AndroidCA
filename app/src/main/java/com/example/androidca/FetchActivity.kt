@@ -78,6 +78,9 @@ class FetchActivity : AppCompatActivity() {
         setContentView(R.layout.activity_fetch)
 
         urlEditText = findViewById(R.id.urlEditText)
+        // 设置默认URL
+        urlEditText.setText(getString(R.string.default_url))
+
         fetchButton = findViewById(R.id.fetchButton)
         progressBar = findViewById(R.id.progressBar)
         progressTextView = findViewById(R.id.progressTextView)
@@ -248,8 +251,8 @@ class ImageAdapter(
         // 根据选中状态设置视觉效果
         if (selectedImages.contains(imageUrl)) {
             holder.itemView.setBackgroundColor(Color.LTGRAY)
-            holder.imageView.scaleX = 0.8f
-            holder.imageView.scaleY = 0.8f
+            holder.imageView.scaleX = 0.5f
+            holder.imageView.scaleY = 0.5f
         } else {
             holder.itemView.background = null
             holder.imageView.scaleX = 1.0f
@@ -262,10 +265,10 @@ class ImageAdapter(
             // 点击时添加动画效果
             val isSelected = selectedImages.contains(imageUrl)
             val scaleAnimation = ScaleAnimation(
-                if (isSelected) 0.8f else 1.0f,  // 开始大小
-                if (isSelected) 1.0f else 0.8f,  // 结束大小
-                if (isSelected) 0.8f else 1.0f,  // 开始大小
-                if (isSelected) 1.0f else 0.8f,  // 结束大小
+                if (isSelected) 0.5f else 1.0f,  // 开始大小
+                if (isSelected) 1.0f else 0.5f,  // 结束大小
+                if (isSelected) 0.5f else 1.0f,  // 开始大小
+                if (isSelected) 1.0f else 0.5f,  // 结束大小
                 ScaleAnimation.RELATIVE_TO_SELF, 0.5f,
                 ScaleAnimation.RELATIVE_TO_SELF, 0.5f
             ).apply {

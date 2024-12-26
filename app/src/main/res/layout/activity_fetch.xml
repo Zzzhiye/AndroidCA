@@ -10,9 +10,8 @@
         android:id="@+id/urlEditText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="enter_url"
+        android:hint="@string/enter_url"
         android:inputType="textUri"
-        android:text="default_url"
         app:layout_constraintEnd_toStartOf="@+id/fetchButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
