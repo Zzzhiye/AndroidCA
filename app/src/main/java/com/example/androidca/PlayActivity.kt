@@ -14,9 +14,12 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.AdView
+import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
+import com.example.androidca.api.ApiClient
+import com.example.androidca.api.RankingRequest
 import com.google.android.gms.ads.MobileAds
+import kotlinx.coroutines.launch
 
 
 class PlayActivity : AppCompatActivity() {
@@ -29,7 +32,7 @@ class PlayActivity : AppCompatActivity() {
 
 
     //存放已翻开的卡牌
-    private val matchedCards = mutableSetOf<Int>()
+    private val matchedCards = mutableSetOf<String>()
     //两张用于比较的牌
     private var firstCard: ImageView? = null
     private var secondCard: ImageView? = null
@@ -37,16 +40,9 @@ class PlayActivity : AppCompatActivity() {
     private var isProcessing = false
 
     private var startTime = 0L
-    private var selectImages = listOf<Int>()//图片资源id传入
+    //private var selectImages = listOf<Int>()//图片资源id传入
     private var revealedCards = mutableListOf<View>()
-    private var selectedImages = listOf(
-        R.drawable.br,
-        R.drawable.che,
-        R.drawable.mc,
-        R.drawable.mu,
-        R.drawable.ncs,
-        R.drawable.w
-    )
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,10 +61,17 @@ class PlayActivity : AppCompatActivity() {
         adManager = AdManager(this, adContainer)
         adManager.initializeAds()
 
+        val selectedImages = intent.getStringArrayListExtra("selectedImages") ?: ArrayList()
+
         //计时器启动！
         startTimer()
         //游戏网格初始化
-        initGamerGrid()
+        if (selectedImages.size == 6) {
+            initGameGrid(selectedImages)
+        } else {
+            Toast.makeText(this, "Failed to load images for the game", Toast.LENGTH_SHORT).show()
+            finish() // 结束活动，返回上一界面
+        }
 
     }
     private fun startTimer(){
@@ -85,33 +88,36 @@ class PlayActivity : AppCompatActivity() {
         })
     }
     //游戏卡牌初始化
-    private fun initGamerGrid(){
-        val shuffledImages = (selectedImages + selectedImages).shuffled() //6zu对应
+    private fun initGameGrid(images: List<String>) {
+        val shuffledImages = (images + images).shuffled() // 双份图片并随机打乱
+        gameGrid.columnCount = 4 // 设置网格布局为 4 列
 
-        gameGrid.columnCount = 4 //形成3行4列布局
-
-        for(imageId in shuffledImages){
-            val card = createCardView(imageId)
+        for (imageUrl in shuffledImages) {
+            val card = createCardView(imageUrl)
             gameGrid.addView(card)
         }
     }
+
     //创建卡牌
-    private fun createCardView(imageId:Int): View{
+    private fun createCardView(imageUrl: String): View {
         val card = ImageView(this)
-        card.layoutParams = GridLayout.LayoutParams().apply{
+        card.layoutParams = GridLayout.LayoutParams().apply {
             width = 0
             height = 0
-            columnSpec = GridLayout.spec(GridLayout.UNDEFINED,1f)
-            rowSpec = GridLayout.spec(GridLayout.UNDEFINED,1f)
+            columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+            rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
         }
-        card.setImageResource(R.drawable.back)//刚开始是牌背
+        card.setImageResource(R.drawable.back) // 默认显示卡背
 
-        //后面用来图片配对
-        card.tag = imageId
+        // 使用 tag 保存图片 URL
+        card.tag = imageUrl
 
-        card.setOnClickListener{onCardClicked(card,imageId)}
+        card.setOnClickListener {
+            onCardClicked(card)
+        }
         return card
     }
+
 
     //卡片翻转方法
     private fun flipCard(card: ImageView, showFront: Boolean) {
@@ -119,19 +125,30 @@ class PlayActivity : AppCompatActivity() {
         animator.duration = 300
         animator.start()
         animator.doOnEnd {
-            card.setImageResource(if (showFront) card.tag as Int else R.drawable.back)
+            if (showFront) {
+                // 加载正面图片
+                val imageUrl = card.tag as String
+                Glide.with(this)
+                    .load(imageUrl)
+                    .into(card)
+            } else {
+                // 显示卡背
+                card.setImageResource(R.drawable.back)
+            }
+
             val reverseAnimator = ObjectAnimator.ofFloat(card, "rotationY", 90f, 0f)
             reverseAnimator.duration = 300
             reverseAnimator.start()
         }
     }
 
+
     //游戏内部
-    private fun onCardClicked(card: ImageView, imageId: Int) {
+    private fun onCardClicked(card: ImageView) {
         // 防止重复点击
         // 或正在处理其他翻牌操作时继续点击
         // 或点击翻转后的牌
-        if (isProcessing || card.tag in matchedCards || card.tag in matchedCards) return
+        if (isProcessing || card.tag in matchedCards) return
 
         // 翻转卡片
         flipCard(card, showFront = true)
@@ -148,15 +165,15 @@ class PlayActivity : AppCompatActivity() {
 
         if (firstCard?.tag == secondCard?.tag) {
             matchCount++
-            matchedCards.add(firstCard?.tag as Int)
-            matchedCards.add(secondCard?.tag as Int)
+            matchedCards.add(firstCard?.tag as String)
+            matchedCards.add(secondCard?.tag as String)
             firstCard = null
             secondCard = null
             isProcessing = false
 
             matchCountView.text = "Matches: $matchCount"
 
-            if (matchCount == selectedImages.size) {
+            if (matchCount == 6) {
                 onGameComplete()
             }
         } else {
@@ -176,7 +193,23 @@ class PlayActivity : AppCompatActivity() {
         val elapsedTime = System.currentTimeMillis() - startTime
         Toast.makeText(this, "Game Complete!, Time: ${elapsedTime / 1000}s", Toast.LENGTH_LONG).show()
         // 保存成绩到后端并跳转到排行榜界面
+        lifecycleScope.launch {
+            try {
+                val rankingRequest = RankingRequest(
+                    userId = getUserIdFromSharedPrefs(),
+                    completionTime = formatTimeSpan(elapsedTime / 1000)
+                )
 
+                val response = ApiClient.apiService.addRanking(rankingRequest)
+                if (response.isSuccessful) {
+                    println("Ranking saved successfully!")
+                } else {
+                    println("Failed to save ranking: ${response.code()} ${response.message()}")
+                }
+            } catch (e: Exception) {
+                println("Error saving ranking: ${e.message}")
+            }
+        }
         //关闭游戏画面
         finish()
         val intent = Intent(this,LeaderBoardActivity::class.java)
@@ -189,5 +222,18 @@ class PlayActivity : AppCompatActivity() {
         super.onDestroy()
         adManager.stopAds()
     }
+
+    private fun getUserIdFromSharedPrefs(): Int {
+        val sharedPrefs = getSharedPreferences("MemoryGamePrefs", Context.MODE_PRIVATE)
+        return sharedPrefs.getInt("userId", -1) // 返回 -1 表示未找到
+    }
+
+    private fun formatTimeSpan(seconds: Long): String {
+        val hours = seconds / 3600
+        val minutes = (seconds % 3600) / 60
+        val secs = seconds % 60
+        return String.format("%02d:%02d:%02d", hours, minutes, secs)
+    }
+
 
 }

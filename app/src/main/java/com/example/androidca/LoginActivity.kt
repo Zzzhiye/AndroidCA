@@ -39,6 +39,10 @@ class LoginActivity : AppCompatActivity() {
                     val response = ApiClient.apiService.login(LoginRequest(username, password))
                     if (response.isSuccessful) {
                         val loginResponse = response.body()
+                        val userId = loginResponse?.user?.userId
+                        if (userId != null) {
+                            saveUserIdToSharedPrefs(userId)
+                        }
                         val isPaid = loginResponse?.user?.isPaid?: false
                         savePaidStatus(isPaid)
                         startActivity(Intent(this@LoginActivity, FetchActivity::class.java))
@@ -74,6 +78,14 @@ class LoginActivity : AppCompatActivity() {
         val sharedPrefs = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
         sharedPrefs.edit().apply {
             putBoolean(IS_PAID_KEY, isPaid)
+            apply()
+        }
+    }
+
+    private fun saveUserIdToSharedPrefs(userId: Int) {
+        val sharedPrefs = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
+        sharedPrefs.edit().apply {
+            putInt("userId", userId) // 保存 userId
             apply()
         }
     }
