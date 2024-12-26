@@ -41,7 +41,7 @@ class LoginActivity : AppCompatActivity() {
                         val loginResponse = response.body()
                         val isPaid = loginResponse?.user?.isPaid?: false
                         savePaidStatus(isPaid)
-                        startActivity(Intent(this@LoginActivity, PlayActivity::class.java))
+                        startActivity(Intent(this@LoginActivity, FetchActivity::class.java))
                         finish()
                         }  else {
                         Toast.makeText(this@LoginActivity, "Login failed", Toast.LENGTH_SHORT).show()

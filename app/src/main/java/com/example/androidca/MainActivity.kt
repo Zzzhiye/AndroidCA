@@ -14,11 +14,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
-        
+
         val startBtn = findViewById<Button>(R.id.startButton)
         startBtn.setOnClickListener {
             if (isUserLoggedIn()) {
-                startActivity(Intent(this, PlayActivity::class.java))
+                startActivity(Intent(this, FetchActivity::class.java))
             } else {
                 startActivity(Intent(this, LoginActivity::class.java))
             }

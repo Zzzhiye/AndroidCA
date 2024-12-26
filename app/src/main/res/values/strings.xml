@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">AndroidCA</string>
+    <string name="enter_url">Enter URL</string>
+    <string name="default_url">https://stocksnap.io</string>
+    <string name="fetch">Fetch</string>
+    <string name="downloading_0_of_20_images">Downloading 0 of 20 images...</string>
+    <string name="downloading_d_of_20_images">Downloading %d of 20 images...</string>
+    <string name="select_6_images">Select 6 Images</string>
+    <string name="please_select_6_images">Please select 6 images</string>
+    <string name="invalid_url">Invalid URL</string>
+    <string name="image_download_cancelled">Image download cancelled</string>
+    <string name="error_downloading_images">Error downloading images</string>
+    <string name="image_selected">Image selected</string>
+    <string name="image_deselected">Image deselected</string>
+    <string name="confirm">Confirm</string>
 </resources>
