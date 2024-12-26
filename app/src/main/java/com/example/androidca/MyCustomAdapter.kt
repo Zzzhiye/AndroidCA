@@ -41,7 +41,7 @@ class MyCustomAdapter(
         textView1?.text = rankings[pos].userName
 
         val textView2 = _view.findViewById<TextView>(R.id.textCol2)
-        textView2?.text = "${rankings[pos].completionTime.toString()}s"
+        textView2?.text = rankings[pos].completionTime
 
         val textView3 = _view.findViewById<TextView>(R.id.textCol3)
         textView3?.text = DateTimeConverter.toString(DateTimeConverter.fromString(rankings[pos].dateTime))

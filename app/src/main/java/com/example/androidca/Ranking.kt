@@ -5,6 +5,6 @@ import kotlinx.serialization.Serializable
 data class Ranking(
     val activityId: Int,
     val userName: String,
-    val completionTime: Int,
+    val completionTime: String,
     val dateTime: String
 )
