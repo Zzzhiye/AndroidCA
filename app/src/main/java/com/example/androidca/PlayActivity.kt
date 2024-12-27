@@ -9,6 +9,7 @@ import android.os.Looper
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.GridLayout
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -29,6 +30,7 @@ class PlayActivity : AppCompatActivity() {
     private lateinit var adContainer:FrameLayout
     private var matchCount = 0
     private lateinit var adManager: AdManager
+    private lateinit var closeButton:ImageButton
 
 
     //存放已翻开的卡牌
@@ -56,6 +58,7 @@ class PlayActivity : AppCompatActivity() {
         timerView = findViewById(R.id.timer)
         gameGrid = findViewById(R.id.gG)
         adContainer = findViewById(R.id.adContainer)
+        closeButton = findViewById(R.id.closeButton)
 
         //initialise ads
         adManager = AdManager(this, adContainer)
@@ -71,6 +74,13 @@ class PlayActivity : AppCompatActivity() {
         } else {
             Toast.makeText(this, "Failed to load images for the game", Toast.LENGTH_SHORT).show()
             finish() // 结束活动，返回上一界面
+        }
+
+        closeButton.setBackgroundResource(R.drawable.close)
+        closeButton.setOnClickListener {
+            val intent = Intent(this, FetchActivity::class.java)
+            startActivity(intent)
+            finish()
         }
 
     }
@@ -148,7 +158,7 @@ class PlayActivity : AppCompatActivity() {
         // 防止重复点击
         // 或正在处理其他翻牌操作时继续点击
         // 或点击翻转后的牌
-        if (isProcessing || card.tag in matchedCards) return
+        if (isProcessing || card.tag in matchedCards || firstCard == card) return
 
         // 翻转卡片
         flipCard(card, showFront = true)

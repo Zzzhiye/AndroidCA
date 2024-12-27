@@ -4,6 +4,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:ads="http://schemas.android.com/apk/res-auto">
+
+    <ImageButton
+        android:id="@+id/closeButton"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="350dp"
+        android:background="@null"
+        android:contentDescription="Close"
+        android:scaleType="fitXY"
+        android:src="@drawable/close" />
+
     <!--匹配上的计数器-->
     <TextView
         android:id="@+id/mC"
@@ -14,20 +26,22 @@
         android:text="Matches: 0"
         android:textSize="18sp"/>
     <!--计时器 -->
+    <!--游戏网格 -->
+
     <TextView
         android:id="@+id/timer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_margin="16dp"
+        android:layout_width="50dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginStart="16dp"
         android:text="00:00"
-        android:textSize="18sp"/>
-    <!--游戏网格 -->
+        android:textSize="18sp" />
+
     <GridLayout
         android:id="@+id/gG"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="16dp"
+        android:layout_margin="30dp"
         android:layout_above="@+id/adContainer"
         android:layout_below="@+id/mC"
         android:columnCount="4"

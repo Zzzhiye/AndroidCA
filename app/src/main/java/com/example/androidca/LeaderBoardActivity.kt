@@ -21,13 +21,14 @@ class LeaderBoardActivity : AppCompatActivity() {
         setContentView(R.layout.activity_leaderboard)
 
         val userScore = intent.getLongExtra("completionTime", 0)
+        val formatUserScore = formatTimeSpan(userScore)
 
         val closeButton = findViewById<ImageButton>(R.id.closeBtn)
         closeButton.setBackgroundResource(R.drawable.close)
         closeButton.setOnClickListener {
 
             //TODO Now fetch activity page not exist, default as MainActivity
-            val intent = Intent(this, MainActivity::class.java)
+            val intent = Intent(this, FetchActivity::class.java)
             startActivity(intent)
             finish()
         }
@@ -45,7 +46,7 @@ class LeaderBoardActivity : AppCompatActivity() {
                 println("List is not null and has ${rankingList!!.size} items")
 
                 val curr = this@LeaderBoardActivity!!.findViewById<TextView>(R.id.currentScore)
-                curr?.text = "Your completion time : ${userScore}s"
+                curr?.text = "Your completion time : ${formatUserScore}"
                 curr?.setBackgroundResource(R.drawable.footer)
 
                 val mediaPlayer = MediaPlayer.create(this@LeaderBoardActivity, R.raw.applause)
@@ -78,6 +79,19 @@ class LeaderBoardActivity : AppCompatActivity() {
             return null
         } finally {
             conn?.disconnect()
+        }
+    }
+
+    private fun formatTimeSpan(seconds: Long): String {
+        val hours = seconds / 3600
+        val minutes = (seconds % 3600) / 60
+        val secs = seconds % 60
+        if(seconds>3600){
+            return String.format("%dh %02dmin :%02ds", hours, minutes, secs)
+        }else if(seconds>60){
+            return String.format("%dmin %02ds", minutes, secs)
+        }else{
+            return String.format("%ds", secs)
         }
     }
 }
