@@ -52,11 +52,10 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.android)
     implementation("com.google.android.gms:play-services-ads:23.6.0")
-    implementation("org.jsoup:jsoup:1.14.3")
     implementation("com.github.bumptech.glide:glide:4.13.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.13.0")
     implementation("androidx.recyclerview:recyclerview:1.2.1")
-
+    implementation ("org.jsoup:jsoup:1.15.3")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:okhttp:4.9.0")

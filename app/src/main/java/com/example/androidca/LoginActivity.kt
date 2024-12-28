@@ -18,6 +18,7 @@ import kotlin.random.Random
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
+    private lateinit var sessionManager: SessionManager
 
     companion object {
         const val VERIFICATION_CODE_KEY = "verification_code"
@@ -30,6 +31,8 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        sessionManager = SessionManager(this)
+
         binding.loginButton.setOnClickListener {
             val username = binding.usernameInput.text.toString()
             val password = binding.passwordInput.text.toString()
@@ -37,17 +40,12 @@ class LoginActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 try {
                     val response = ApiClient.apiService.login(LoginRequest(username, password))
-                    if (response.isSuccessful) {
-                        val loginResponse = response.body()
-                        val userId = loginResponse?.user?.userId
-                        if (userId != null) {
-                            saveUserIdToSharedPrefs(userId)
-                        }
-                        val isPaid = loginResponse?.user?.isPaid?: false
-                        savePaidStatus(isPaid)
+                    if (response.isSuccessful && response.body() != null) {
+                        val user = response.body()!!.user
+                        sessionManager.createLoginSession(user.userId)
                         startActivity(Intent(this@LoginActivity, FetchActivity::class.java))
                         finish()
-                        }  else {
+                    } else {
                         Toast.makeText(this@LoginActivity, "Login failed", Toast.LENGTH_SHORT).show()
                     }
                 } catch (e: Exception) {
