@@ -25,6 +25,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.load.model.LazyHeaders
 import com.bumptech.glide.request.RequestOptions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -244,13 +246,15 @@ class FetchActivity : AppCompatActivity() {
                     .get()
 
                 val imageElements = doc.select("img[src]")
-                val imageUrls = imageElements
+                val down_imageUrls = imageElements
                     .map { it.absUrl("src") }
                     .filter { it.isNotEmpty() }
+                    .filter { it.endsWith(".jpg") || it.contains(".jpg")}
                     .distinct()
+                    .take(20)
 
-                if (imageUrls.isNotEmpty()) {
-                    processImageUrls(imageUrls)
+                if (down_imageUrls.isNotEmpty()) {
+                    processImageUrls(down_imageUrls)
                 } else {
                     withContext(Dispatchers.Main) {
                         Toast.makeText(this@FetchActivity, "No images found", Toast.LENGTH_SHORT).show()
@@ -275,7 +279,9 @@ class FetchActivity : AppCompatActivity() {
             try {
                 for (imageUrl in urls) {
                     if (!isActive) return@launch
-                    if (!isValidImageUrl(imageUrl)) continue
+
+                    //if (!isValidImageUrl(imageUrl)) continue
+//                  if (!imageUrl.endsWith(".jpg", ignoreCase = true)) continue
                     try {
                 
                         kotlinx.coroutines.delay(300)
@@ -319,10 +325,10 @@ class FetchActivity : AppCompatActivity() {
 
     private fun isValidImageUrl(url: String): Boolean {
         val exts = listOf(".jpg", ".jpeg", ".png")
-        val keywords = listOf("image", "photo", "picture", "/img/", "/images/", "imgur","/photos/")
+        
         val lower = url.lowercase()
 
-        return exts.any { lower.endsWith(it) } || keywords.any { lower.contains(it) }
+        return exts.any { lower.endsWith(it) } 
     }
 
     private fun preloadPlaceholders() {
@@ -381,7 +387,8 @@ class ImageAdapter(
 
         val options = RequestOptions()
             .timeout(10000)
-            .centerCrop() .error(R.drawable.error_image)
+            .centerCrop()
+            .error(R.drawable.error_image)
 
         if (imageUrl == "placeholder") {
             Glide.with(holder.itemView.context)
@@ -389,8 +396,15 @@ class ImageAdapter(
                 .apply(options)
                 .into(holder.imageView)
         } else {
+
+            val glideUrl = GlideUrl(
+                imageUrl,
+                LazyHeaders.Builder()
+                    .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                    .build()
+            )
             Glide.with(holder.itemView.context)
-                .load(imageUrl)
+                .load(glideUrl)
                 .apply(options)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .skipMemoryCache(true)
