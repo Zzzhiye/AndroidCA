@@ -229,8 +229,8 @@ class PlayActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         adManager.stopAds()
+        super.onDestroy()
     }
 
     private fun getUserIdFromSharedPrefs(): Int {

@@ -41,8 +41,12 @@ class LoginActivity : AppCompatActivity() {
                 try {
                     val response = ApiClient.apiService.login(LoginRequest(username, password))
                     if (response.isSuccessful && response.body() != null) {
-                        val user = response.body()!!.user
-                        sessionManager.createLoginSession(user.userId)
+                        val user = response.body()?.user
+                        val isPaid = user?.isPaid?: false
+                        savePaidStatus(isPaid)
+                        val userId = user?.userId?: 0
+                        saveUserIdToSharedPrefs(userId)
+                        sessionManager.createLoginSession(userId)
                         startActivity(Intent(this@LoginActivity, FetchActivity::class.java))
                         finish()
                     } else {
