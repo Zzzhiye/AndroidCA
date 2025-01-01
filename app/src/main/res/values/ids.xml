@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="completionTimeText" type="id" />
+    <item name="dateTimeText" type="id" />
+</resources>

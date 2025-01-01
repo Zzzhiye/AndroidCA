@@ -1,5 +1,7 @@
 package com.example.androidca.api
 
+
+import com.example.androidca.Ranking
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -22,6 +24,11 @@ interface ApiService {
 
     @PUT("api/auth/updateUser/{userId}")
     suspend fun updateUser(@Path("userId") userId: Int, @Body updateUserRequest: UserUpdateRequest): Response<User>
+
+    @GET("api/rankings/user/{userId}")
+    suspend fun getUserRankings(@Path("userId") userId: Int): Response<List<Ranking>>
+
+
 
 }
 
@@ -57,4 +64,5 @@ data class UserUpdateRequest(
     val userName: String,
     val email: String
 )
+
 

@@ -18,4 +18,6 @@
     <string name="user_name">User Name</string>
     <string name="email">Email</string>
     <string name="user_id">User ID:</string>
+    <string name="user_profile_title">user profile title</string>
+    <string name="information_label">information label</string>
 </resources>
