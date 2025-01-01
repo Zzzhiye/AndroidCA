@@ -6,5 +6,5 @@ data class Ranking(
     val activityId: Int,
     val userName: String,
     val completionTime: String,
-    val dateTime: String
+    var dateTime: String
 )

@@ -49,7 +49,7 @@ class PlayActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_play)
-
+        startService(Intent(this, BackgroundMusicService::class.java))
         //Initialise and load ads
         MobileAds.initialize(this) {}
 
@@ -230,6 +230,7 @@ class PlayActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         adManager.stopAds()
+        stopService(Intent(this, BackgroundMusicService::class.java))
         super.onDestroy()
     }
 

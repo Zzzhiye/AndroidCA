@@ -27,7 +27,6 @@ class LeaderBoardActivity : AppCompatActivity() {
         closeButton.setBackgroundResource(R.drawable.close)
         closeButton.setOnClickListener {
 
-            //TODO Now fetch activity page not exist, default as MainActivity
             val intent = Intent(this, FetchActivity::class.java)
             startActivity(intent)
             finish()
@@ -67,7 +66,10 @@ class LeaderBoardActivity : AppCompatActivity() {
             if (conn.responseCode == HttpURLConnection.HTTP_OK) {
                 val response = conn.inputStream.bufferedReader().use { it.readText() }
                 println("Response: $response")
-                val rankingList : List<Ranking> = Json.decodeFromString(response)
+                var rankingList : List<Ranking> = Json.decodeFromString(response)
+                for (ranking in rankingList) {
+                    ranking.dateTime = ranking.dateTime.replace(Regex("\\.\\d+$"), "")
+                }
                 return rankingList
             } else {
                 println("Error: ${conn.responseCode}")
