@@ -11,17 +11,11 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="User Profile"
+        android:text="用户个人信息"
         android:textSize="24sp"
         android:textStyle="bold"
         android:paddingBottom="16dp" />
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Personal Information"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:padding="16dp" />
+
     <!-- 信息展示区域 -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -31,8 +25,6 @@
         android:layout_marginBottom="16dp"
         android:padding="16dp"
         android:elevation="4dp">
-
-
 
         <!-- 用户ID信息展示 -->
         <LinearLayout
@@ -134,25 +126,4 @@
             android:textColor="@android:color/white"
             android:background="@drawable/button_bg_edit" />
     </LinearLayout>
-
-    <!-- 游戏历史记录标题区域 -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Game History"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:padding="16dp" />
-
-    <!-- 游戏历史记录列表展示区域 -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/gameHistoryRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:clipToPadding="false"
-        android:padding="8dp"
-        android:background="@drawable/bg_user_info_panel" />
-
-
 </LinearLayout>
