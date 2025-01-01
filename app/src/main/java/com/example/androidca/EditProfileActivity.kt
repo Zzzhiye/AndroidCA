@@ -1,5 +1,6 @@
 package com.example.androidca
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -27,16 +28,26 @@ class EditProfileActivity : AppCompatActivity() {
         val userId = intent.getIntExtra("UserId", -1)
         val currentUserName = intent.getStringExtra("UserName")
         val currentEmail = intent.getStringExtra("Email")
+        val backButton = findViewById<Button>(R.id.backButton)
+
+        backButton.setOnClickListener {
+            val intent = Intent(this, UserProfileActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
 
         // 显示当前用户信息
-        userNameEditText.setText(currentUserName)
+        userNameEditText.setText(currentUserName?.replace("username: ", "").orEmpty())
         emailEditText.setText(currentEmail)
-
-        // 保存更新后的用户信息
         saveButton.setOnClickListener {
-            val newUserName = userNameEditText.text.toString()
+            val newUserName = userNameEditText.text.toString().trim().let {
+                if (it.startsWith("username: ")) {
+                    it.replace("username: ", "")
+                } else {
+                    it
+                }
+            }
             val newEmail = emailEditText.text.toString()
-
             CoroutineScope(Dispatchers.IO).launch {
                 val response = ApiClient.apiService.updateUser(
                     userId,
@@ -49,6 +60,9 @@ class EditProfileActivity : AppCompatActivity() {
                             "Profile updated successfully",
                             Toast.LENGTH_SHORT
                         ).show()
+                        // 创建意图启动UserProfileActivity
+                        val intent = Intent(this@EditProfileActivity, UserProfileActivity::class.java)
+                        startActivity(intent)
                         finish()
                     } else {
                         Toast.makeText(
@@ -60,5 +74,6 @@ class EditProfileActivity : AppCompatActivity() {
                 }
             }
         }
+
     }
 }
