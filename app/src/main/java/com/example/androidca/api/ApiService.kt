@@ -2,7 +2,10 @@ package com.example.androidca.api
 
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Path
 
 interface ApiService {
     @POST("api/auth/login")
@@ -13,6 +16,12 @@ interface ApiService {
 
     @POST("api/Rankings/addRanking")
     suspend fun addRanking(@Body rankingRequest: RankingRequest): Response<Unit>
+
+    @GET("api/auth/getUser/{userId}")
+    suspend fun getUser(@Path("userId") userId: Int): Response<User>
+
+    @PUT("api/auth/updateUser/{userId}")
+    suspend fun updateUser(@Path("userId") userId: Int, @Body updateUserRequest: UserUpdateRequest): Response<User>
 
 }
 
@@ -35,6 +44,7 @@ data class LogoutResponse(
 data class User(
     val userId: Int,
     val userName: String,
+    val email: String,
     val isPaid: Boolean
 )
 
@@ -42,3 +52,9 @@ data class RankingRequest(
     val userId: Int,
     val completionTime: String
 )
+
+data class UserUpdateRequest(
+    val userName: String,
+    val email: String
+)
+

@@ -1,5 +1,4 @@
 package com.example.androidca
-
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -12,6 +11,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+
 import android.view.animation.ScaleAnimation
 import android.widget.Button
 import android.widget.EditText
@@ -158,7 +158,8 @@ class FetchActivity : AppCompatActivity() {
 
     private fun setupBottomButtons() {
         userProfileButton.setOnClickListener {
-
+            val intent = Intent(this, UserProfileActivity::class.java)
+            startActivity(intent)
         }
 
         logoutButton.setOnClickListener {
