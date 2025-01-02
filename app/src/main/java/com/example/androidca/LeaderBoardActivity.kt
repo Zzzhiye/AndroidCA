@@ -79,7 +79,7 @@ class LeaderBoardActivity : AppCompatActivity() {
             if (conn.responseCode == HttpURLConnection.HTTP_OK) {
                 val response = conn.inputStream.bufferedReader().use { it.readText() }
                 println("Response: $response")
-                var rankingList : List<Ranking> = Json.decodeFromString(response)
+                val rankingList : List<Ranking> = Json.decodeFromString(response)
                 for (ranking in rankingList) {
                     ranking.dateTime = ranking.dateTime.replace(Regex("\\.\\d+$"), "")
                 }
