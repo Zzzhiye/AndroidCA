@@ -5,6 +5,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.androidca.R
 import com.example.androidca.Ranking
+import java.text.SimpleDateFormat
+import java.util.*
 
 class RankingAdapter(private val rankings: List<Ranking>) : RecyclerView.Adapter<RankingAdapter.RankingViewHolder>() {
 
@@ -20,9 +22,20 @@ class RankingAdapter(private val rankings: List<Ranking>) : RecyclerView.Adapter
 
     override fun onBindViewHolder(holder: RankingViewHolder, position: Int) {
         val ranking = rankings[position]
-        holder.dateTimeText.text = ranking.dateTime
+
+        // 格式化日期时间戳（以毫秒为单位）为秒级别
+        val dateTimeMillis = ranking.dateTime.toLongOrNull() ?: 0L
+        val formattedDateTime = formatDateTime(dateTimeMillis)
+
+        holder.dateTimeText.text = formattedDateTime
         holder.scoreText.text = ranking.completionTime.toString()
     }
 
     override fun getItemCount() = rankings.size
+
+    private fun formatDateTime(milliseconds: Long): String {
+        val date = Date(milliseconds)
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        return dateFormat.format(date)
+    }
 }

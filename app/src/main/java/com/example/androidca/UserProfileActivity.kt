@@ -41,7 +41,9 @@ class UserProfileActivity : AppCompatActivity() {
         }
 
         backButton.setOnClickListener {
-            onBackPressed()
+            val intent = Intent(this, FetchActivity::class.java)
+            startActivity(intent)
+            finish()
         }
 
         CoroutineScope(Dispatchers.IO).launch {
