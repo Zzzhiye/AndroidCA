@@ -24,7 +24,6 @@ class UserProfileActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user_profile)
 
-        val userIdText = findViewById<TextView>(R.id.userIdText)
         val userNameText = findViewById<TextView>(R.id.userNameText)
         val emailText = findViewById<TextView>(R.id.emailText)
         val editButton = findViewById<Button>(R.id.editButton)
@@ -53,7 +52,6 @@ class UserProfileActivity : AppCompatActivity() {
                     if (userResponse.isSuccessful) {
                         val user = userResponse.body()
                         user?.let {
-                            userIdText.text = "${it.userId}"
                             userNameText.text = "${it.userName}"
                             emailText.text = "${it.email}"
 
