@@ -3,7 +3,6 @@ package com.example.androidca
 import android.content.Intent
 import android.media.MediaPlayer
 import android.os.Bundle
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ListView
 import android.widget.TextView
@@ -20,8 +19,21 @@ class LeaderBoardActivity : AppCompatActivity() {
         println("into LeaderBoard")
         setContentView(R.layout.activity_leaderboard)
 
-        val userScore = intent.getLongExtra("completionTime", 0)
-        val formatUserScore = formatTimeSpan(userScore)
+        val extras = intent.extras
+        val formatUserScore: String = if (extras != null) {
+            var formattedValue: String? = null
+            for (key in extras.keySet()) {
+                val value = extras[key]
+                formattedValue = when (value) {
+                    is String -> value
+                    is Long -> formatTimeSpan(value)
+                    else -> value.toString()
+                }
+            }
+            formattedValue ?: "No score available"
+        } else {
+            "No score available"
+        }
 
         val closeButton = findViewById<ImageButton>(R.id.closeBtn)
         closeButton.setBackgroundResource(R.drawable.close)

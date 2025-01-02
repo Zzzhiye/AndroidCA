@@ -12,7 +12,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 
-import android.view.animation.ScaleAnimation
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
@@ -28,17 +27,16 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
 import com.bumptech.glide.request.RequestOptions
+import com.example.androidca.LoginActivity.Companion.SHARED_PREFS_NAME
+import com.example.androidca.api.ApiClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
 import org.jsoup.Jsoup
 import java.net.URL
-import java.util.concurrent.CancellationException
 
 class FetchActivity : AppCompatActivity() {
 
@@ -167,7 +165,38 @@ class FetchActivity : AppCompatActivity() {
         }
 
         rankButton.setOnClickListener {
-            startActivity(Intent(this, LeaderBoardActivity::class.java))
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val sharedPreferences = getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE)
+                    val userId = sharedPreferences.getInt("userId", -1)
+                    if (userId == -1) {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(this@FetchActivity, "Invalid user ID", Toast.LENGTH_SHORT).show()
+                        }
+                        return@launch
+                    }
+                    val rankingsResponse = ApiClient.apiService.getUserTopRanking(userId)
+                    withContext(Dispatchers.Main) {
+                        val time: String = if (rankingsResponse.isSuccessful) {
+                            val responseBody = rankingsResponse.body()
+                            if (responseBody.isNullOrEmpty()) {
+                                "User has no rankings available"
+                            } else {
+                                responseBody
+                            }
+                        } else {
+                            "Failed to load user rankings"
+                        }
+                        val intent = Intent(this@FetchActivity, LeaderBoardActivity::class.java).apply {
+                            putExtra("completionTime", time)
+                        }
+                        startActivity(intent)
+                    }
+                } catch (e: Exception) {
+                    Log.e("FetchActivity", "Error loading user rankings", e)
+                }
+            }
+
         }
     }
 

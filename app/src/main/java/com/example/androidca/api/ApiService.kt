@@ -28,8 +28,8 @@ interface ApiService {
     @GET("api/rankings/user/{userId}")
     suspend fun getUserRankings(@Path("userId") userId: Int): Response<List<Ranking>>
 
-
-
+    @GET("api/rankings/top/user/{userId}")
+    suspend fun getUserTopRanking(@Path("userId") userId: Int): Response<String>
 }
 
 data class LoginRequest(
