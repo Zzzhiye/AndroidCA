@@ -220,6 +220,7 @@ class PlayActivity : AppCompatActivity() {
                 println("Error saving ranking: ${e.message}")
             }
         }
+        stopService(Intent(this, BackgroundMusicService::class.java))
         //关闭游戏画面
         finish()
         val intent = Intent(this,LeaderBoardActivity::class.java)
@@ -230,7 +231,7 @@ class PlayActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         adManager.stopAds()
-        stopService(Intent(this, BackgroundMusicService::class.java))
+
         super.onDestroy()
     }
 

@@ -93,7 +93,7 @@
             android:id="@+id/userProfileButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="User Profile"
+            android:text="Profile"
             android:layout_marginEnd="8dp"/>
 
         <Button
