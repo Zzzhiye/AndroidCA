@@ -165,6 +165,8 @@ class PlayActivity : AppCompatActivity() {
                 val imageUrl = card.tag as String
                 Glide.with(this)
                     .load(imageUrl)
+                    .override(593,851)
+                    .centerCrop()
                     .into(card)
             } else {
                 // 显示卡背
