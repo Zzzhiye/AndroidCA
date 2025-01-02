@@ -68,5 +68,10 @@ dependencies {
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation ("com.squareup.okhttp3:okhttp-urlconnection:4.9.3")
-    implementation("androidx.localbroadcastmanager:localbroadcastmanager:1.0.0") 
+    implementation("androidx.localbroadcastmanager:localbroadcastmanager:1.0.0")
+    implementation ("nl.dionsegijn:konfetti-xml:2.0.2")
+    implementation ("com.google.android.material:material:1.4.0")
+
+
+
 }

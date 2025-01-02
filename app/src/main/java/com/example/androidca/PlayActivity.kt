@@ -1,8 +1,11 @@
 package com.example.androidca
 
 import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -49,6 +52,7 @@ class PlayActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_play)
+        setDynamicGradientBackground()
         startService(Intent(this, BackgroundMusicService::class.java))
         //Initialise and load ads
         MobileAds.initialize(this) {}
@@ -84,6 +88,27 @@ class PlayActivity : AppCompatActivity() {
         }
 
     }
+    private fun setDynamicGradientBackground() {
+        val layout = findViewById<View>(R.id.main)
+
+        val gradient = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(Color.parseColor("#D8BFD8"), Color.parseColor("#FFFFFF"))
+        )
+        layout.background = gradient
+
+        val animator = ValueAnimator.ofArgb(Color.parseColor("#D8BFD8"), Color.parseColor("#FFE4E1"))
+        animator.duration = 3000 // 动画持续时间
+        animator.addUpdateListener { animation ->
+            val newColor = animation.animatedValue as Int
+            gradient.colors = intArrayOf(newColor, Color.parseColor("#FFFFFF"))
+        }
+
+        animator.repeatMode = ValueAnimator.REVERSE
+        animator.repeatCount = ValueAnimator.INFINITE
+        animator.start()
+    }
+
     private fun startTimer(){
         startTime = System.currentTimeMillis()
         val handler = Handler(Looper.getMainLooper())
@@ -228,6 +253,7 @@ class PlayActivity : AppCompatActivity() {
         println("elapsed $elapsedTime ")
         startActivity(intent)
     }
+
 
     override fun onDestroy() {
         adManager.stopAds()

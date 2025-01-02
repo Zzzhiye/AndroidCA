@@ -54,6 +54,7 @@ class LeaderBoardActivity : AppCompatActivity() {
         }
     }
 
+
     fun fetchData() : List<Ranking>? {
         var conn: HttpURLConnection? = null
         try {
