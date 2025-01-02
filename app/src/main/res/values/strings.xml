@@ -3,6 +3,7 @@
     <string name="enter_url">Enter URL</string>
     <string name="default_url">https://www.istockphoto.com/search/2/image?phrase=flower</string>
     <string name="fetch">Fetch</string>
+    <string name="fetchTitle">Fetch Images</string>
     <string name="downloading_0_of_20_images">Downloading 0 of 20 images...</string>
     <string name="downloading_d_of_20_images">Downloading %d of 20 images...</string>
     <string name="select_6_images">Select 6 Images</string>
