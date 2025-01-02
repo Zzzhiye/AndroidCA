@@ -12,7 +12,7 @@ class SessionManager(context: Context) {
         private const val KEY_IS_LOGGED_IN = "isLoggedIn"
         private const val KEY_LOGIN_TIME = "loginTime"
         private const val KEY_USER_ID = "userId"
-        private const val SESSION_DURATION = 1 * 60 * 1000 // 24小时，以毫秒为单位
+        private const val SESSION_DURATION = 1 * 60 * 1000 //ms
     }
 
     fun createLoginSession(userId: Int) {

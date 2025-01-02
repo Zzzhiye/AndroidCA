@@ -257,7 +257,7 @@ class PlayActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         adManager.stopAds()
-
+        stopService(Intent(this, BackgroundMusicService::class.java))
         super.onDestroy()
     }
 

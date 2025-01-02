@@ -6,6 +6,7 @@
     android:id="@+id/login"
     android:orientation="vertical"
     android:padding="16dp"
+    android:background="@drawable/background_gradient"
     android:gravity="center">
 
     <ImageView
