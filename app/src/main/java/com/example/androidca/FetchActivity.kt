@@ -49,12 +49,12 @@ class FetchActivity : AppCompatActivity() {
     private lateinit var imagesRecyclerView: RecyclerView
     private lateinit var confirmButton: Button
     private lateinit var imageAdapter: ImageAdapter
-    private lateinit var cancelButton: Button
     private lateinit var userProfileButton: Button
     private lateinit var logoutButton: Button
     private lateinit var rankButton: Button
 
     private var downloadJob: Job? = null
+    private var processJob: Job? = null  // Add this line at class level
     private val selectedImages = mutableListOf<String>()
     private val imageUrls = mutableListOf<String>()
     private lateinit var localBroadcastManager: LocalBroadcastManager
@@ -83,7 +83,9 @@ class FetchActivity : AppCompatActivity() {
                 "DOWNLOAD_ERROR" -> {
                     val errorMessage = intent.getStringExtra("error")
                     Toast.makeText(this@FetchActivity, errorMessage, Toast.LENGTH_SHORT).show()
-                    resetFetchState()
+                    // 直接在这里重置状态
+                    isFetching = false
+                    fetchButton.isEnabled = true
                 }
             }
         }
@@ -100,7 +102,6 @@ class FetchActivity : AppCompatActivity() {
         progressTextView = findViewById(R.id.progressTextView)
         imagesRecyclerView = findViewById(R.id.imagesRecyclerView)
         confirmButton = findViewById(R.id.confirmButton)
-        cancelButton = findViewById(R.id.cancelButton)
         userProfileButton = findViewById(R.id.userProfileButton)
         logoutButton = findViewById(R.id.logoutButton)
         rankButton = findViewById(R.id.rankButton)
@@ -108,7 +109,6 @@ class FetchActivity : AppCompatActivity() {
         setupRecyclerView()
         setupFetchButton()
         setupConfirmButton()
-        setupCancelButton()
         setupBottomButtons()
 
         localBroadcastManager = LocalBroadcastManager.getInstance(this)
@@ -134,9 +134,7 @@ class FetchActivity : AppCompatActivity() {
         })
 
         fetchButton.setOnClickListener {
-            if (!isFetching) {
-                startImageDownload()
-            }
+            startImageDownload()
         }
     }
 
@@ -147,12 +145,6 @@ class FetchActivity : AppCompatActivity() {
                 intent.putStringArrayListExtra("selectedImages", ArrayList(selectedImages))
                 startActivity(intent)
             }
-        }
-    }
-
-    private fun setupCancelButton() {
-        cancelButton.setOnClickListener {
-            cancelDownload()
         }
     }
 
@@ -168,7 +160,7 @@ class FetchActivity : AppCompatActivity() {
                 .edit()
                 .clear()
                 .apply()
-            
+
             // Navigate to login
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
@@ -176,26 +168,6 @@ class FetchActivity : AppCompatActivity() {
 
         rankButton.setOnClickListener {
             startActivity(Intent(this, LeaderBoardActivity::class.java))
-        }
-    }
-
-    private fun cancelDownload() {
-        downloadJob?.cancel()
-        isFetching = false
-        CoroutineScope(Dispatchers.Main).launch {
-            cancelButton.visibility = View.GONE
-            fetchButton.isEnabled = true
-            Toast.makeText(this@FetchActivity, getString(R.string.image_download_cancelled), Toast.LENGTH_SHORT).show()
-        }
-        resetFetchState()
-    }
-
-    private fun resetFetchState() {
-        isFetching = false
-        CoroutineScope(Dispatchers.Main).launch {
-            cancelButton.visibility = View.GONE
-            fetchButton.isEnabled = true
-            clearDownloadState()
         }
     }
 
@@ -233,12 +205,31 @@ class FetchActivity : AppCompatActivity() {
             return
         }
 
+        // Cancel all existing jobs
+        downloadJob?.cancel()
+        processJob?.cancel()
+        
+        // Reset all states
+        isFetching = false
+        selectedImages.clear()
+        imageUrls.clear()
+        
+        // Update UI state
+        progressBar.progress = 0
+        progressTextView.text = getString(R.string.downloading_0_of_20_images)
+        confirmButton.apply {
+            isEnabled = false
+            visibility = View.GONE
+        }
+        
+        // Prepare placeholder images
+        repeat(20) {
+            imageUrls.add("placeholder")
+        }
+        imageAdapter.notifyDataSetChanged()
+        
+        // Start new download
         isFetching = true
-        fetchButton.isEnabled = false
-        cancelButton.visibility = View.VISIBLE
-        clearDownloadState()
-        preloadPlaceholders()
-
         downloadJob = CoroutineScope(Dispatchers.IO).launch {
             try {
                 val doc = Jsoup.connect(url)
@@ -259,14 +250,16 @@ class FetchActivity : AppCompatActivity() {
                 } else {
                     withContext(Dispatchers.Main) {
                         Toast.makeText(this@FetchActivity, "No images found", Toast.LENGTH_SHORT).show()
-                        resetFetchState()
+                        isFetching = false
+                        fetchButton.isEnabled = true
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     Log.e("FetchActivity", "Error: ${e.message}", e)
                     Toast.makeText(this@FetchActivity, "Error loading page: ${e.message}", Toast.LENGTH_SHORT).show()
-                    resetFetchState()
+                    isFetching = false
+                    fetchButton.isEnabled = true
                 }
             }
         }
@@ -274,37 +267,42 @@ class FetchActivity : AppCompatActivity() {
 
     private fun processImageUrls(urls: List<String>) {
         var validImageCount = 0
-        var currentPosition = 0
 
-        CoroutineScope(Dispatchers.IO).launch {
+        processJob = CoroutineScope(Dispatchers.IO).launch {
             try {
-                for (imageUrl in urls) {
-                    if (!isActive) return@launch
+                for ((index, imageUrl) in urls.withIndex()) {
+                    if (!isActive) {
+                        Log.d("FetchActivity", "Process cancelled")
+                        return@launch
+                    }
 
-                    //if (!isValidImageUrl(imageUrl)) continue
-//                  if (!imageUrl.endsWith(".jpg", ignoreCase = true)) continue
                     try {
-                
                         kotlinx.coroutines.delay(300)
+                        
+                        if (!isActive) {
+                            Log.d("FetchActivity", "Process cancelled during delay")
+                            return@launch
+                        }
+                        
                         withContext(Dispatchers.Main) {
-                            imageUrls[currentPosition] = imageUrl
-                            progressBar.progress = validImageCount + 1
-                            progressTextView.text = getString(R.string.downloading_d_of_20_images, validImageCount + 1)
-                            imageAdapter.notifyItemChanged(currentPosition)
-
-                            validImageCount++
-                            currentPosition++
-                            if (validImageCount >= 20) return@withContext
+                            if (index < imageUrls.size) {
+                                imageUrls[index] = imageUrl
+                                validImageCount++
+                                progressBar.progress = validImageCount
+                                progressTextView.text = getString(R.string.downloading_d_of_20_images, validImageCount)
+                                imageAdapter.notifyItemChanged(index)
+                            }
                         }
                     } catch (e: Exception) {
-                        // 跳过无法识别或加载的图，不占用位置
+                        Log.e("FetchActivity", "Error processing image: ${e.message}")
                         continue
                     }
                 }
                 withContext(Dispatchers.Main) {
                     if (validImageCount == 0) {
                         Toast.makeText(this@FetchActivity, "No valid images found", Toast.LENGTH_SHORT).show()
-                        resetFetchState()
+                        isFetching = false
+                        fetchButton.isEnabled = true
                     } else {
                         // ...existing logic...
                         confirmButton.visibility = View.VISIBLE
@@ -326,30 +324,10 @@ class FetchActivity : AppCompatActivity() {
 
     private fun isValidImageUrl(url: String): Boolean {
         val exts = listOf(".jpg", ".jpeg", ".png")
-        
+
         val lower = url.lowercase()
 
-        return exts.any { lower.endsWith(it) } 
-    }
-
-    private fun preloadPlaceholders() {
-        imageUrls.clear()
-        repeat(20) {
-            imageUrls.add("placeholder")
-        }
-        imageAdapter.notifyDataSetChanged()
-    }
-
-    private fun clearDownloadState() {
-        imageUrls.clear()
-        selectedImages.clear()
-        imageAdapter.notifyDataSetChanged()
-        progressBar.progress = 0
-        progressTextView.text = getString(R.string.downloading_0_of_20_images)
-        confirmButton.apply {
-            isEnabled = false
-            visibility = View.GONE
-        }
+        return exts.any { lower.endsWith(it) }
     }
 
     private fun isValidUrl(url: String): Boolean {
@@ -364,6 +342,7 @@ class FetchActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         downloadJob?.cancel()
+        processJob?.cancel()  // Add this line
         localBroadcastManager.unregisterReceiver(imageReceiver)
     }
 }
