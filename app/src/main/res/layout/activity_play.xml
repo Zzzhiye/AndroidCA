@@ -46,8 +46,6 @@
         android:layout_margin="30dp"
         android:layout_above="@+id/adContainer"
         android:layout_below="@+id/mC"
-        android:columnCount="4"
-        android:rowCount="2"
         android:foregroundGravity="center"/>
 
     <!--广告 replace frame with ads-->

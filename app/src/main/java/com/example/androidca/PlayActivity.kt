@@ -1,11 +1,13 @@
 package com.example.androidca
 
+import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.graphics.Camera
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -17,6 +19,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import androidx.core.animation.doOnEnd
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
@@ -127,22 +130,63 @@ class PlayActivity : AppCompatActivity() {
         val shuffledImages = (images + images).shuffled() // 双份图片并随机打乱
         gameGrid.columnCount = 4 // 设置网格布局为 4 列
 
-        for (imageUrl in shuffledImages) {
-            val card = createCardView(imageUrl)
+        for (i in shuffledImages.indices) {
+            val card = createCardView(shuffledImages[i])
+            val params = GridLayout.LayoutParams().apply {
+                width = 0
+                height = 0
+                columnSpec = when (i) {
+                    0 -> GridLayout.spec(1, 1f) // 第一行第一个卡片，位于第二列
+                    1 -> GridLayout.spec(2, 1f) // 第一行第二个卡片，位于第三列
+                    2 -> GridLayout.spec(0, 1f)
+                    3 -> GridLayout.spec(1, 1f)
+                    4 -> GridLayout.spec(2, 1f)
+                    5 -> GridLayout.spec(3, 1f)
+                    6 -> GridLayout.spec(0, 1f)
+                    7 -> GridLayout.spec(1, 1f)
+                    8 -> GridLayout.spec(2, 1f)
+                    9 -> GridLayout.spec(3, 1f)
+                    10 -> GridLayout.spec(1, 1f)
+                    11 -> GridLayout.spec(2, 1f)
+                    else -> GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                }
+
+                rowSpec = when (i) {
+                    in 0..1 -> GridLayout.spec(0, 1f) // 第一行
+                    in 2..5 -> GridLayout.spec(1, 1f) // 第二行
+                    in 6..9 -> GridLayout.spec(2, 1f) // 第三行
+                    in 10..11 -> GridLayout.spec(3, 1f) // 第四行
+                    else -> GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                }
+
+                // 为第一行的卡片增加顶部间距
+                if (i in 0..1) {
+                    setMargins(16, 64, 16, 16) // 增加顶部间距为 64
+                }else if(i in 10..11){
+                    setMargins(16, 16, 16, 64)
+                } else {
+                    setMargins(16, 16, 16, 16)
+                }
+            }
+
+            card.layoutParams = params
+
+            val rotation = (-15..15).random().toFloat()
+            card.rotation = rotation
+
+
             gameGrid.addView(card)
         }
     }
 
+
+
+
     //创建卡牌
     private fun createCardView(imageUrl: String): View {
         val card = ImageView(this)
-        card.layoutParams = GridLayout.LayoutParams().apply {
-            width = 0
-            height = 0
-            columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-            rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-        }
-        card.setImageResource(R.drawable.back) // 默认显示卡背
+
+        card.setImageResource(R.drawable.card_back) // 默认显示卡背
 
         // 使用 tag 保存图片 URL
         card.tag = imageUrl
@@ -156,12 +200,30 @@ class PlayActivity : AppCompatActivity() {
 
     //卡片翻转方法
     private fun flipCard(card: ImageView, showFront: Boolean) {
-        val animator = ObjectAnimator.ofFloat(card, "rotationY", 0f, 90f)
-        animator.duration = 300
-        animator.start()
-        animator.doOnEnd {
+
+       val camera = Camera()
+        // 放大动画
+        val enlargeXAnimator = ObjectAnimator.ofFloat(card, "scaleX", 1f, 1.5f)
+        val enlargeYAnimator = ObjectAnimator.ofFloat(card, "scaleY", 1f, 1.5f)
+        // 缩小动画
+        val shrinkXAnimator = ObjectAnimator.ofFloat(card, "scaleX", 1.5f, 1f)
+        val shrinkYAnimator = ObjectAnimator.ofFloat(card, "scaleY", 1.5f, 1f)
+        // 旋转动画：从0°到90°
+        val rotateToMiddleAnimator = ObjectAnimator.ofFloat(card, "rotationY", 0f, 90f)
+        // 旋转动画：从90°到0°
+        val rotateFromMiddleAnimator = ObjectAnimator.ofFloat(card, "rotationY", 90f, 180f)
+
+        enlargeXAnimator.duration = 300
+        enlargeYAnimator.duration = 300
+        rotateToMiddleAnimator.duration = 300
+        rotateFromMiddleAnimator.duration = 300
+        shrinkXAnimator.duration = 300
+        shrinkYAnimator.duration = 300
+
+        // 中间状态切换图片
+        rotateToMiddleAnimator.doOnEnd {
             if (showFront) {
-                // 加载正面图片
+                // 显示正面图片
                 val imageUrl = card.tag as String
                 Glide.with(this)
                     .load(imageUrl)
@@ -170,14 +232,26 @@ class PlayActivity : AppCompatActivity() {
                     .into(card)
             } else {
                 // 显示卡背
-                card.setImageResource(R.drawable.back)
+                card.setImageResource(R.drawable.card_back)
             }
-
-            val reverseAnimator = ObjectAnimator.ofFloat(card, "rotationY", 90f, 0f)
-            reverseAnimator.duration = 300
-            reverseAnimator.start()
         }
+
+        // 动画序列
+        val firstPhase = AnimatorSet().apply {
+            playTogether(enlargeXAnimator, enlargeYAnimator, rotateToMiddleAnimator)
+        }
+
+        val secondPhase = AnimatorSet().apply {
+            playTogether(rotateFromMiddleAnimator, shrinkXAnimator, shrinkYAnimator)
+        }
+
+        firstPhase.doOnEnd {
+            secondPhase.start()
+        }
+
+        firstPhase.start()
     }
+
 
 
     //游戏内部
@@ -220,7 +294,7 @@ class PlayActivity : AppCompatActivity() {
                 firstCard = null
                 secondCard = null
                 isProcessing = false
-            }, 1000)
+            }, 1500)
         }
     }
 
