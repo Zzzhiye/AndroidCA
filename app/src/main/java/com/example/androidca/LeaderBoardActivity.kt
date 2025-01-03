@@ -57,7 +57,7 @@ class LeaderBoardActivity : AppCompatActivity() {
                 println("List is not null and has ${rankingList!!.size} items")
 
                 val curr = this@LeaderBoardActivity!!.findViewById<TextView>(R.id.currentScore)
-                curr?.text = "${formatUserScore}"
+                curr?.text = formatUserScore
                 curr?.setBackgroundResource(R.drawable.footer)
 
                 val mediaPlayer = MediaPlayer.create(this@LeaderBoardActivity, R.raw.applause)
