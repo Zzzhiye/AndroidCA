@@ -25,8 +25,8 @@ class LeaderBoardActivity : AppCompatActivity() {
             for (key in extras.keySet()) {
                 val value = extras[key]
                 formattedValue = when (value) {
-                    is String -> value
-                    is Long -> formatTimeSpan(value)
+                    is String -> "Your best timing: $value"
+                    is Long -> "Your completion timing: "+ formatTimeSpan(value)
                     else -> value.toString()
                 }
             }
@@ -57,7 +57,7 @@ class LeaderBoardActivity : AppCompatActivity() {
                 println("List is not null and has ${rankingList!!.size} items")
 
                 val curr = this@LeaderBoardActivity!!.findViewById<TextView>(R.id.currentScore)
-                curr?.text = "Your completion time : ${formatUserScore}"
+                curr?.text = "${formatUserScore}"
                 curr?.setBackgroundResource(R.drawable.footer)
 
                 val mediaPlayer = MediaPlayer.create(this@LeaderBoardActivity, R.raw.applause)
