@@ -48,7 +48,6 @@
         android:layout_below="@+id/mC"
         android:foregroundGravity="center"/>
 
-    <!--广告 replace frame with ads-->
     <FrameLayout
         android:id="@+id/adContainer"
         android:layout_width="match_parent"

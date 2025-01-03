@@ -1,9 +1,11 @@
 package com.example.androidca
+
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -27,6 +29,8 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
 import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.request.target.CustomViewTarget
+import com.bumptech.glide.request.transition.Transition
 import com.example.androidca.LoginActivity.Companion.SHARED_PREFS_NAME
 import com.example.androidca.api.ApiClient
 import kotlinx.coroutines.CoroutineScope
@@ -51,6 +55,8 @@ class FetchActivity : AppCompatActivity() {
     private lateinit var logoutButton: Button
     private lateinit var rankButton: Button
 
+    private lateinit var sessionManager: SessionManager
+
     private var downloadJob: Job? = null
     private var processJob: Job? = null  // Add this line at class level
     private val selectedImages = mutableListOf<String>()
@@ -70,7 +76,8 @@ class FetchActivity : AppCompatActivity() {
                     if (position >= 0 && position < imageUrls.size) {
                         imageUrls[position] = imageUrl
                         progressBar.progress = currentCount
-                        progressTextView.text = getString(R.string.downloading_d_of_20_images, currentCount)
+                        progressTextView.text =
+                            getString(R.string.downloading_d_of_20_images, currentCount)
                         imageAdapter.notifyItemChanged(position)
 
                         if (currentCount == 20) {
@@ -78,6 +85,7 @@ class FetchActivity : AppCompatActivity() {
                         }
                     }
                 }
+
                 "DOWNLOAD_ERROR" -> {
                     val errorMessage = intent.getStringExtra("error")
                     Toast.makeText(this@FetchActivity, errorMessage, Toast.LENGTH_SHORT).show()
@@ -154,10 +162,8 @@ class FetchActivity : AppCompatActivity() {
 
         logoutButton.setOnClickListener {
             // Clear user session
-            getSharedPreferences(LoginActivity.SHARED_PREFS_NAME, MODE_PRIVATE)
-                .edit()
-                .clear()
-                .apply()
+            sessionManager = SessionManager(this)
+            sessionManager.logoutUser()
 
             // Navigate to login
             startActivity(Intent(this, LoginActivity::class.java))
@@ -171,7 +177,11 @@ class FetchActivity : AppCompatActivity() {
                     val userId = sharedPreferences.getInt("userId", -1)
                     if (userId == -1) {
                         withContext(Dispatchers.Main) {
-                            Toast.makeText(this@FetchActivity, "Invalid user ID", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this@FetchActivity,
+                                "Invalid user ID",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                         return@launch
                     }
@@ -187,9 +197,10 @@ class FetchActivity : AppCompatActivity() {
                         } else {
                             "Failed to load user rankings"
                         }
-                        val intent = Intent(this@FetchActivity, LeaderBoardActivity::class.java).apply {
-                            putExtra("completionTime", time)
-                        }
+                        val intent =
+                            Intent(this@FetchActivity, LeaderBoardActivity::class.java).apply {
+                                putExtra("completionTime", time)
+                            }
                         startActivity(intent)
                     }
                 } catch (e: Exception) {
@@ -237,12 +248,12 @@ class FetchActivity : AppCompatActivity() {
         // Cancel all existing jobs
         downloadJob?.cancel()
         processJob?.cancel()
-        
+
         // Reset all states
         isFetching = false
         selectedImages.clear()
         imageUrls.clear()
-        
+
         // Update UI state
         progressBar.progress = 0
         progressTextView.text = getString(R.string.downloading_0_of_20_images)
@@ -250,13 +261,13 @@ class FetchActivity : AppCompatActivity() {
             isEnabled = false
             visibility = View.GONE
         }
-        
+
         // Prepare placeholder images
         repeat(20) {
             imageUrls.add("placeholder")
         }
         imageAdapter.notifyDataSetChanged()
-        
+
         // Start new download
         isFetching = true
         downloadJob = CoroutineScope(Dispatchers.IO).launch {
@@ -270,7 +281,7 @@ class FetchActivity : AppCompatActivity() {
                 val down_imageUrls = imageElements
                     .map { it.absUrl("src") }
                     .filter { it.isNotEmpty() }
-                    .filter { it.endsWith(".jpg") || it.contains(".jpg")}
+                    .filter { it.endsWith(".jpg") || it.contains(".jpg") }
                     .distinct()
                     .take(20)
 
@@ -278,7 +289,8 @@ class FetchActivity : AppCompatActivity() {
                     processImageUrls(down_imageUrls)
                 } else {
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(this@FetchActivity, "No images found", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@FetchActivity, "No images found", Toast.LENGTH_SHORT)
+                            .show()
                         isFetching = false
                         fetchButton.isEnabled = true
                     }
@@ -286,7 +298,11 @@ class FetchActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     Log.e("FetchActivity", "Error: ${e.message}", e)
-                    Toast.makeText(this@FetchActivity, "Error loading page: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@FetchActivity,
+                        "Error loading page: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     isFetching = false
                     fetchButton.isEnabled = true
                 }
@@ -307,18 +323,19 @@ class FetchActivity : AppCompatActivity() {
 
                     try {
                         kotlinx.coroutines.delay(300)
-                        
+
                         if (!isActive) {
                             Log.d("FetchActivity", "Process cancelled during delay")
                             return@launch
                         }
-                        
+
                         withContext(Dispatchers.Main) {
                             if (index < imageUrls.size) {
                                 imageUrls[index] = imageUrl
                                 validImageCount++
                                 progressBar.progress = validImageCount
-                                progressTextView.text = getString(R.string.downloading_d_of_20_images, validImageCount)
+                                progressTextView.text =
+                                    getString(R.string.downloading_d_of_20_images, validImageCount)
                                 imageAdapter.notifyItemChanged(index)
                             }
                         }
@@ -329,7 +346,11 @@ class FetchActivity : AppCompatActivity() {
                 }
                 withContext(Dispatchers.Main) {
                     if (validImageCount == 0) {
-                        Toast.makeText(this@FetchActivity, "No valid images found", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@FetchActivity,
+                            "No valid images found",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         isFetching = false
                         fetchButton.isEnabled = true
                     } else {
@@ -396,12 +417,11 @@ class ImageAdapter(
 
         val options = RequestOptions()
             .timeout(10000)
-            .centerCrop()
             .error(R.drawable.error_image)
 
         if (imageUrl == "placeholder") {
             Glide.with(holder.itemView.context)
-                .load(R.drawable.close)
+                .load(R.drawable.placeholder)
                 .apply(options)
                 .into(holder.imageView)
         } else {

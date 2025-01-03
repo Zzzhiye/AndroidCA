@@ -8,6 +8,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.graphics.Camera
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -186,7 +187,7 @@ class PlayActivity : AppCompatActivity() {
     private fun createCardView(imageUrl: String): View {
         val card = ImageView(this)
 
-        card.setImageResource(R.drawable.card_back) // 默认显示卡背
+        card.setImageResource(R.drawable.back) // 默认显示卡背
 
         // 使用 tag 保存图片 URL
         card.tag = imageUrl
@@ -227,12 +228,10 @@ class PlayActivity : AppCompatActivity() {
                 val imageUrl = card.tag as String
                 Glide.with(this)
                     .load(imageUrl)
-                    .override(593,851)
-                    .centerCrop()
                     .into(card)
             } else {
                 // 显示卡背
-                card.setImageResource(R.drawable.card_back)
+                card.setImageResource(R.drawable.back)
             }
         }
 
@@ -260,7 +259,7 @@ class PlayActivity : AppCompatActivity() {
         // 或正在处理其他翻牌操作时继续点击
         // 或点击翻转后的牌
         if (isProcessing || card.tag in matchedCards || firstCard == card) return
-
+        playFlipSound()
         // 翻转卡片
         flipCard(card, showFront = true)
         if (firstCard == null) {
@@ -348,6 +347,15 @@ class PlayActivity : AppCompatActivity() {
         val secs = seconds % 60
         return String.format("%02d:%02d:%02d", hours, minutes, secs)
     }
+
+    private fun playFlipSound() {
+        val mediaPlayer = MediaPlayer.create(this, R.raw.flip_sound) // 加载音效文件
+        mediaPlayer.setOnCompletionListener { mp ->
+            mp.release() // 播放结束后释放资源
+        }
+        mediaPlayer.start() // 播放音效
+    }
+
 
 
 }

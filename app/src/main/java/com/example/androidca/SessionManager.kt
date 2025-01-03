@@ -42,6 +42,7 @@ class SessionManager(context: Context) {
 
     fun logoutUser() {
         editor.apply {
+            putBoolean(KEY_IS_LOGGED_IN, false)
             clear()
             apply()
         }
