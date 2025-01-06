@@ -348,8 +348,8 @@ class FetchActivity : AppCompatActivity() {
                         isFetching = false
                         fetchButton.isEnabled = true
                     } else {
-                        // ...existing logic...
                         confirmButton.visibility = View.VISIBLE
+                        imageAdapter.isClickable = true
                         if (validImageCount < 20) {
                             Toast.makeText(
                                 this@FetchActivity,
@@ -361,7 +361,13 @@ class FetchActivity : AppCompatActivity() {
                     }
                 }
             } catch (e: Exception) {
-                // ...existing error handling...
+                withContext(Dispatchers.Main) {
+                    val intent = Intent("DOWNLOAD_ERROR").apply {
+                        putExtra("error", getString(R.string.error_downloading_images))
+                    }
+                    localBroadcastManager.sendBroadcast(intent)
+                }
+                Log.e("FetchActivity", "Error downloading images: ${e.message}")
             }
         }
     }
@@ -388,6 +394,8 @@ class ImageAdapter(
     private val selectedImages: MutableList<String>,
     private val onItemClick: (String) -> Unit
 ) : RecyclerView.Adapter<ImageAdapter.ViewHolder>() {
+
+    var isClickable: Boolean = false
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val imageView: ImageView = view.findViewById(R.id.imageView)
@@ -436,7 +444,9 @@ class ImageAdapter(
         }
 
         holder.itemView.setOnClickListener {
-            onItemClick(imageUrl)
+            if (isClickable) {
+                onItemClick(imageUrl)
+            }
         }
     }
 
