@@ -14,11 +14,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import android.util.Log // 添加日志功能
+import android.util.Log
 import androidx.recyclerview.widget.RecyclerView
 
 class UserProfileActivity : AppCompatActivity() {
-    private lateinit var rankingsRecyclerView: RecyclerView // 定义 RecyclerView 变量
+    private lateinit var rankingsRecyclerView: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,7 +28,7 @@ class UserProfileActivity : AppCompatActivity() {
         val emailText = findViewById<TextView>(R.id.emailText)
         val editButton = findViewById<Button>(R.id.editButton)
         val backButton = findViewById<Button>(R.id.backButton)
-        rankingsRecyclerView = findViewById(R.id.rankingsRecyclerView) // 初始化 RecyclerView
+        rankingsRecyclerView = findViewById(R.id.rankingsRecyclerView)
 
         val sharedPreferences = getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE)
         val userId = sharedPreferences.getInt("userId", -1)
@@ -55,7 +55,6 @@ class UserProfileActivity : AppCompatActivity() {
                             userNameText.text = "${it.userName}"
                             emailText.text = "${it.email}"
 
-                            // 加载用户历史记录
                             loadRankings(it.userId)
                         }
                     } else {

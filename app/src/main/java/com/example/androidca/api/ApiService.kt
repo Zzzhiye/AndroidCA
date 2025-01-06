@@ -12,9 +12,6 @@ import retrofit2.http.Path
 interface ApiService {
     @POST("api/auth/login")
     suspend fun login(@Body loginRequest: LoginRequest): Response<LoginResponse>
-    
-    @POST("api/auth/logout")
-    suspend fun logout(): Response<LogoutResponse>
 
     @POST("api/Rankings/addRanking")
     suspend fun addRanking(@Body rankingRequest: RankingRequest): Response<Unit>
@@ -42,10 +39,6 @@ data class LoginResponse(
     val user: User,
     val IsPaid: Boolean,
     val userId: Int
-)
-
-data class LogoutResponse(
-    val message: String
 )
 
 data class User(

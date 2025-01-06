@@ -48,12 +48,4 @@ class SessionManager(context: Context) {
         }
     }
 
-    fun getUserId(): Int {
-        return prefs.getInt(KEY_USER_ID, -1)
-    }
-
-    fun getSessionExpiryTime(): Long {
-        val loginTime = prefs.getLong(KEY_LOGIN_TIME, 0)
-        return loginTime + SESSION_DURATION
-    }
 }

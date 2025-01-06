@@ -20,7 +20,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.cardview.widget.CardView
 import androidx.core.animation.doOnEnd
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
@@ -40,16 +39,13 @@ class PlayActivity : AppCompatActivity() {
     private lateinit var closeButton:ImageButton
 
 
-    //存放已翻开的卡牌
     private val matchedCards = mutableSetOf<String>()
-    //两张用于比较的牌
     private var firstCard: ImageView? = null
     private var secondCard: ImageView? = null
-    //两张牌正在比较中的状态
     private var isProcessing = false
 
     private var startTime = 0L
-    //private var selectImages = listOf<Int>()//图片资源id传入
+
     private var revealedCards = mutableListOf<View>()
 
 
@@ -61,7 +57,6 @@ class PlayActivity : AppCompatActivity() {
         //Initialise and load ads
         MobileAds.initialize(this) {}
 
-        //绑定视图
         matchCountView = findViewById(R.id.mC)
         timerView = findViewById(R.id.timer)
         gameGrid = findViewById(R.id.gG)
@@ -74,9 +69,7 @@ class PlayActivity : AppCompatActivity() {
 
         val selectedImages = intent.getStringArrayListExtra("selectedImages") ?: ArrayList()
 
-        //计时器启动！
         startTimer()
-        //游戏网格初始化
         if (selectedImages.size == 6) {
             initGameGrid(selectedImages)
         } else {
@@ -102,7 +95,7 @@ class PlayActivity : AppCompatActivity() {
         layout.background = gradient
 
         val animator = ValueAnimator.ofArgb(Color.parseColor("#D8BFD8"), Color.parseColor("#FFE4E1"))
-        animator.duration = 3000 // 动画持续时间
+        animator.duration = 3000
         animator.addUpdateListener { animation ->
             val newColor = animation.animatedValue as Int
             gradient.colors = intArrayOf(newColor, Color.parseColor("#FFFFFF"))
@@ -126,10 +119,9 @@ class PlayActivity : AppCompatActivity() {
             }
         })
     }
-    //游戏卡牌初始化
     private fun initGameGrid(images: List<String>) {
-        val shuffledImages = (images + images).shuffled() // 双份图片并随机打乱
-        gameGrid.columnCount = 4 // 设置网格布局为 4 列
+        val shuffledImages = (images + images).shuffled()
+        gameGrid.columnCount = 4
 
         for (i in shuffledImages.indices) {
             val card = createCardView(shuffledImages[i])
@@ -137,8 +129,8 @@ class PlayActivity : AppCompatActivity() {
                 width = 0
                 height = 0
                 columnSpec = when (i) {
-                    0 -> GridLayout.spec(1, 1f) // 第一行第一个卡片，位于第二列
-                    1 -> GridLayout.spec(2, 1f) // 第一行第二个卡片，位于第三列
+                    0 -> GridLayout.spec(1, 1f)
+                    1 -> GridLayout.spec(2, 1f)
                     2 -> GridLayout.spec(0, 1f)
                     3 -> GridLayout.spec(1, 1f)
                     4 -> GridLayout.spec(2, 1f)
@@ -153,16 +145,15 @@ class PlayActivity : AppCompatActivity() {
                 }
 
                 rowSpec = when (i) {
-                    in 0..1 -> GridLayout.spec(0, 1f) // 第一行
-                    in 2..5 -> GridLayout.spec(1, 1f) // 第二行
-                    in 6..9 -> GridLayout.spec(2, 1f) // 第三行
-                    in 10..11 -> GridLayout.spec(3, 1f) // 第四行
+                    in 0..1 -> GridLayout.spec(0, 1f)
+                    in 2..5 -> GridLayout.spec(1, 1f)
+                    in 6..9 -> GridLayout.spec(2, 1f)
+                    in 10..11 -> GridLayout.spec(3, 1f)
                     else -> GridLayout.spec(GridLayout.UNDEFINED, 1f)
                 }
 
-                // 为第一行的卡片增加顶部间距
                 if (i in 0..1) {
-                    setMargins(16, 64, 16, 16) // 增加顶部间距为 64
+                    setMargins(16, 64, 16, 16)
                 }else if(i in 10..11){
                     setMargins(16, 16, 16, 64)
                 } else {
@@ -183,13 +174,11 @@ class PlayActivity : AppCompatActivity() {
 
 
 
-    //创建卡牌
     private fun createCardView(imageUrl: String): View {
         val card = ImageView(this)
 
-        card.setImageResource(R.drawable.back) // 默认显示卡背
+        card.setImageResource(R.drawable.back)
 
-        // 使用 tag 保存图片 URL
         card.tag = imageUrl
 
         card.setOnClickListener {
@@ -199,19 +188,17 @@ class PlayActivity : AppCompatActivity() {
     }
 
 
-    //卡片翻转方法
     private fun flipCard(card: ImageView, showFront: Boolean) {
 
-       val camera = Camera()
-        // 放大动画
+        val camera = Camera()
         val enlargeXAnimator = ObjectAnimator.ofFloat(card, "scaleX", 1f, 1.5f)
         val enlargeYAnimator = ObjectAnimator.ofFloat(card, "scaleY", 1f, 1.5f)
-        // 缩小动画
+
         val shrinkXAnimator = ObjectAnimator.ofFloat(card, "scaleX", 1.5f, 1f)
         val shrinkYAnimator = ObjectAnimator.ofFloat(card, "scaleY", 1.5f, 1f)
-        // 旋转动画：从0°到90°
+
         val rotateToMiddleAnimator = ObjectAnimator.ofFloat(card, "rotationY", 0f, 90f)
-        // 旋转动画：从90°到0°
+
         val rotateFromMiddleAnimator = ObjectAnimator.ofFloat(card, "rotationY", 90f, 180f)
 
         enlargeXAnimator.duration = 300
@@ -221,21 +208,17 @@ class PlayActivity : AppCompatActivity() {
         shrinkXAnimator.duration = 300
         shrinkYAnimator.duration = 300
 
-        // 中间状态切换图片
         rotateToMiddleAnimator.doOnEnd {
             if (showFront) {
-                // 显示正面图片
                 val imageUrl = card.tag as String
                 Glide.with(this)
                     .load(imageUrl)
                     .into(card)
             } else {
-                // 显示卡背
                 card.setImageResource(R.drawable.back)
             }
         }
 
-        // 动画序列
         val firstPhase = AnimatorSet().apply {
             playTogether(enlargeXAnimator, enlargeYAnimator, rotateToMiddleAnimator)
         }
@@ -253,14 +236,10 @@ class PlayActivity : AppCompatActivity() {
 
 
 
-    //游戏内部
     private fun onCardClicked(card: ImageView) {
-        // 防止重复点击
-        // 或正在处理其他翻牌操作时继续点击
-        // 或点击翻转后的牌
+
         if (isProcessing || card.tag in matchedCards || firstCard == card) return
         playFlipSound()
-        // 翻转卡片
         flipCard(card, showFront = true)
         if (firstCard == null) {
             firstCard = card
@@ -297,12 +276,10 @@ class PlayActivity : AppCompatActivity() {
         }
     }
 
-    //游戏结算
     private fun onGameComplete() {
         println("startTime : $startTime")
         val elapsedTime = System.currentTimeMillis() - startTime
         Toast.makeText(this, "Game Complete!, Time: ${elapsedTime / 1000}s", Toast.LENGTH_LONG).show()
-        // 保存成绩到后端并跳转到排行榜界面
         lifecycleScope.launch {
             try {
                 val rankingRequest = RankingRequest(
@@ -321,7 +298,6 @@ class PlayActivity : AppCompatActivity() {
             }
         }
         stopService(Intent(this, BackgroundMusicService::class.java))
-        //关闭游戏画面
         finish()
         val intent = Intent(this,LeaderBoardActivity::class.java)
         intent.putExtra("completionTime", elapsedTime / 1000)
@@ -338,7 +314,7 @@ class PlayActivity : AppCompatActivity() {
 
     private fun getUserIdFromSharedPrefs(): Int {
         val sharedPrefs = getSharedPreferences("MemoryGamePrefs", Context.MODE_PRIVATE)
-        return sharedPrefs.getInt("userId", -1) // 返回 -1 表示未找到
+        return sharedPrefs.getInt("userId", -1)
     }
 
     private fun formatTimeSpan(seconds: Long): String {
@@ -349,13 +325,12 @@ class PlayActivity : AppCompatActivity() {
     }
 
     private fun playFlipSound() {
-        val mediaPlayer = MediaPlayer.create(this, R.raw.flip_sound) // 加载音效文件
+        val mediaPlayer = MediaPlayer.create(this, R.raw.flip_sound)
         mediaPlayer.setOnCompletionListener { mp ->
-            mp.release() // 播放结束后释放资源
+            mp.release()
         }
-        mediaPlayer.start() // 播放音效
+        mediaPlayer.start()
     }
-
 
 
 }

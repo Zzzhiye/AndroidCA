@@ -1,6 +1,5 @@
 package com.example.androidca.api
 
-import okhttp3.CookieJar
 import okhttp3.JavaNetCookieJar
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -10,7 +9,7 @@ import java.net.CookiePolicy
 import java.util.concurrent.TimeUnit
 
 object ApiClient {
-    private const val BASE_URL = "http://10.0.2.2:5266/" // Android模拟器访问本地服务器地址
+    private const val BASE_URL = "http://10.0.2.2:5266/"
     
     private val cookieManager = CookieManager().apply {
         setCookiePolicy(CookiePolicy.ACCEPT_ALL)

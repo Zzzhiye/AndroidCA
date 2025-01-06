@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Color
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -29,8 +28,6 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
 import com.bumptech.glide.request.RequestOptions
-import com.bumptech.glide.request.target.CustomViewTarget
-import com.bumptech.glide.request.transition.Transition
 import com.example.androidca.LoginActivity.Companion.SHARED_PREFS_NAME
 import com.example.androidca.api.ApiClient
 import kotlinx.coroutines.CoroutineScope
@@ -58,7 +55,7 @@ class FetchActivity : AppCompatActivity() {
     private lateinit var sessionManager: SessionManager
 
     private var downloadJob: Job? = null
-    private var processJob: Job? = null  // Add this line at class level
+    private var processJob: Job? = null
     private val selectedImages = mutableListOf<String>()
     private val imageUrls = mutableListOf<String>()
     private lateinit var localBroadcastManager: LocalBroadcastManager
@@ -220,14 +217,13 @@ class FetchActivity : AppCompatActivity() {
     }
 
     private fun toggleImageSelection(imageUrl: String) {
-        val position = imageUrls.indexOf(imageUrl) // 获取 position
+        val position = imageUrls.indexOf(imageUrl)
         if (position == -1) return
         if (selectedImages.contains(imageUrl)) {
             selectedImages.remove(imageUrl)
         } else if (selectedImages.size < 6) {
             selectedImages.add(imageUrl)
         }
-        // 更新确认按钮状态
         if (selectedImages.size == 6) {
             confirmButton.visibility = View.VISIBLE
             confirmButton.isEnabled = true
@@ -245,11 +241,9 @@ class FetchActivity : AppCompatActivity() {
             return
         }
 
-        // Cancel all existing jobs
         downloadJob?.cancel()
         processJob?.cancel()
 
-        // Reset all states
         isFetching = false
         selectedImages.clear()
         imageUrls.clear()
@@ -372,14 +366,6 @@ class FetchActivity : AppCompatActivity() {
         }
     }
 
-    private fun isValidImageUrl(url: String): Boolean {
-        val exts = listOf(".jpg", ".jpeg", ".png")
-
-        val lower = url.lowercase()
-
-        return exts.any { lower.endsWith(it) }
-    }
-
     private fun isValidUrl(url: String): Boolean {
         return try {
             URL(url)
@@ -392,7 +378,7 @@ class FetchActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         downloadJob?.cancel()
-        processJob?.cancel()  // Add this line
+        processJob?.cancel()
         localBroadcastManager.unregisterReceiver(imageReceiver)
     }
 }
@@ -439,7 +425,6 @@ class ImageAdapter(
                 .skipMemoryCache(true)
                 .into(holder.imageView)
         }
-        // 设置选中状态的视觉效果
         if (selectedImages.contains(imageUrl)) {
             holder.itemView.setBackgroundColor(Color.LTGRAY)
             holder.imageView.scaleX = 0.7f

@@ -22,7 +22,6 @@ class RankingAdapter(private val rankings: List<Ranking>) : RecyclerView.Adapter
     override fun onBindViewHolder(holder: RankingViewHolder, position: Int) {
         val ranking = rankings[position]
 
-        // 格式化日期时间戳（以毫秒为单位）为秒级别
         ranking.dateTime = ranking.dateTime.replace(Regex("\\.\\d+$"), "")
         val formattedDateTime = formatDateTime(ranking)
 
